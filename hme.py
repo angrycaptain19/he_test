@@ -23,24 +23,15 @@ def encryption_train(X,y):
     # U1 is an orthogonal matrix
     U1 = cp.array(gen_ortho_matrix(X.shape[0]))
     
-    print("U1 generated")
-    
     # U2 is an invertible matrix
     if X.shape[1] > 1:
         U2 = cp.array(gen_ortho_matrix(X.shape[1]))
     else:
         U2 = cp.random.rand(1,1)
     
-    print("U2 generated")
-    
     X_enc = U1.dot(X).dot(U2)
     
-    print ("X enc done")
-    
     y_enc = U1.dot(y)
-    
-    print ("y enc done")
-    
     return [X_enc,y_enc,U1,U2]
 
 def decryption_train(X,y,U1,U2):
@@ -51,7 +42,7 @@ def decryption_train(X,y,U1,U2):
 def encryption_test(X,U2):
     # U3 is an invertible matrix
     if X.shape[0] > 1:
-        U3 = cp.array(ortho_group.rvs(dim=X.shape[0]))
+        U3 = cp.array(gen_ortho_matrix(X.shape[0]))
     else:
         U3 = cp.random.rand(1,1)
     #from IPython import embed; embed()

@@ -8,7 +8,7 @@
 
 import pandas as pd
 from utils import dataload
-from model import vanillaModel, homomorphicEncryptionModel
+from model import vanillaModel, homomorphicEncryptionModel, BenmarkModel
 
 cci_data = pd.read_csv("uci_cci.csv")
 
@@ -21,6 +21,12 @@ x_data, y_data, x_data_shortened, y_data_shortened, X_enc, y_enc, H_enc = datalo
 # source for use of orthogonal matrices and invertible matrices transformation for homomorophic encryption
 
 # Test case 1: Vanilla model (benchmark credit rating/scoring model for default prediction)
-vanillaModel(x_data, y_data)
+# vanillaModel(x_data, y_data)
+
+# BenmarkModel(x_data, y_data, x_data_shortened)
 # Test case 2: Homomorphic encryption model running on encrypted data
 homomorphicEncryptionModel(X_enc, y_enc, x_data, H_enc)
+
+
+# Use Unencrpted data
+BenmarkModel(cci_data)
