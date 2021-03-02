@@ -50,12 +50,10 @@ def encryption_test(X,U2):
     return [X_enc,U3]
 
 def decryption_test(y_enc,U3):
-    y_dec = cp.linalg.inv(U3).dot(y_enc)
-    return y_dec
+    return cp.linalg.inv(U3).dot(y_enc)
 
 def estimator_OLS(X,y):
-    β̂ = cp.linalg.inv(X.T.dot(X)).dot(X.T).dot(y)
-    return β̂
+    return cp.linalg.inv(X.T.dot(X)).dot(X.T).dot(y)
 
 def predict(β̂,X):
     return X.dot(β̂)

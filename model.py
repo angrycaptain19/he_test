@@ -57,25 +57,25 @@ def homomorphicEncryptionModel(X_enc, y_enc, x_data, H_enc):
     idxTrain = np.sort(idx[:train])
     idxTest = np.sort(idx[train:])
 
-    
+
     X_train = pd.DataFrame(X_enc.get()[idxTrain])
     X_train.columns = list(x_data.columns)
-    
+
     y_train = pd.Series(y_enc.get()[idxTrain])
 
     X_test = pd.DataFrame(X_enc.get()[idxTest])
     X_test.columns = list(x_data.columns)
-    
+
     y_test = pd.Series(y_enc.get()[idxTest])
-    
+
     # y_enc.columns = list(y_data.columns)
 
     # Feature columns describe how to use the input.
     # We are adding one numeric feature for each column of the training data
-    my_feature_columns = []
-    for key in x_data.keys():
-        my_feature_columns.append(tf.feature_column.numeric_column(key=key))
-    
+    my_feature_columns = [
+        tf.feature_column.numeric_column(key=key) for key in x_data.keys()
+    ]
+
     opti = tf.optimizers.Adam(learning_rate = 0.01)
 
     input_func= tf.compat.v1.estimator.inputs.pandas_input_fn(x=X_train, 
@@ -83,7 +83,7 @@ def homomorphicEncryptionModel(X_enc, y_enc, x_data, H_enc):
                                                     batch_size=10, 
                                                     num_epochs=1000, 
                                                     shuffle=True)
-    
+
 
     eval_input_func = tf.compat.v1.estimator.inputs.pandas_input_fn(x=X_test,
                                                           y=y_test, 
@@ -94,20 +94,22 @@ def homomorphicEncryptionModel(X_enc, y_enc, x_data, H_enc):
     estimator = tf.estimator.DNNRegressor(hidden_units=[9,9,3], feature_columns=my_feature_columns, optimizer=opti, dropout=0.5)
 
     estimator.train(input_fn=input_func,steps=1000)
-    
+
     result_eval = estimator.evaluate(input_fn=eval_input_func)
 
-    predictions=[]
-    for pred in estimator.predict(input_fn=eval_input_func):
-        predictions.append(np.array(pred['predictions']).astype(float))
-        
+    predictions = [
+        np.array(pred['predictions']).astype(float)
+        for pred in estimator.predict(input_fn=eval_input_func)
+    ]
+
     from sklearn.metrics import mean_squared_error
     np.sqrt(mean_squared_error(y_test, predictions))**0.5
-    
-    accuracy=0
-    for i in range(len(predictions)):
-        if abs(predictions[i][0])-abs(y_test[i])<0.95:
-            accuracy+=1
+
+    accuracy = sum(
+        abs(predictions[i][0]) - abs(y_test[i]) < 0.95
+        for i in range(len(predictions))
+    )
+
     print("HE accuracy: ", accuracy/float(len(y_test)))
 
 def BenmarkModel(df):
@@ -117,10 +119,10 @@ def BenmarkModel(df):
 
     # Feature columns describe how to use the input.
     # We are adding one numeric feature for each column of the training data
-    my_feature_columns = []
-    for key in X_test.keys():
-        my_feature_columns.append(tf.feature_column.numeric_column(key=key))
-    
+    my_feature_columns = [
+        tf.feature_column.numeric_column(key=key) for key in X_test.keys()
+    ]
+
     opti = tf.optimizers.Adam(learning_rate = 0.01)
 
     input_func= tf.compat.v1.estimator.inputs.pandas_input_fn(x=X_train, 
@@ -128,7 +130,7 @@ def BenmarkModel(df):
                                                     batch_size=10, 
                                                     num_epochs=1000, 
                                                     shuffle=True)
-    
+
 
     eval_input_func = tf.compat.v1.estimator.inputs.pandas_input_fn(x=X_test,
                                                           y=y_test, 
@@ -139,22 +141,24 @@ def BenmarkModel(df):
     estimator = tf.estimator.DNNRegressor(hidden_units=[9,9,3], feature_columns=my_feature_columns, optimizer=opti, dropout=0.5)
 
     estimator.train(input_fn=input_func,steps=1000)
-    
+
     result_eval = estimator.evaluate(input_fn=eval_input_func)
 
     print(result_eval)
 
-    predictions=[]
-    for pred in estimator.predict(input_fn=eval_input_func):
-        predictions.append(np.array(pred['predictions']).astype(float))
-        
+    predictions = [
+        np.array(pred['predictions']).astype(float)
+        for pred in estimator.predict(input_fn=eval_input_func)
+    ]
+
     from sklearn.metrics import mean_squared_error
     np.sqrt(mean_squared_error(y_test, predictions))**0.5
 
     y_test = np.array(y_test.values.tolist())
 
-    accuracy=0
-    for i in range(len(predictions)):
-        if abs(predictions[i][0])-abs(y_test[i])<0.95:
-            accuracy+=1
+    accuracy = sum(
+        abs(predictions[i][0]) - abs(y_test[i]) < 0.95
+        for i in range(len(predictions))
+    )
+
     print("Un-encrypted accuracy: ", accuracy/float(len(y_test)))
